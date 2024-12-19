@@ -1,0 +1,25 @@
+name: "Docker Build and Push"
+
+on:
+  workflow_run:
+    workflows:
+      - "Terraform"
+    types:
+      - completed
+
+jobs:
+  docker:
+    name: "Docker Build and Push"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build Docker Image
+        working-directory: ./server
+        run: docker build . --pull -t chat-server:latest
+      - name: Github Login
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Tag Docker Image
+        run: docker tag chat-server:latest ghcr.io/${{ github.repository }}/chat-server:latest
+      - name: Push Docker Image
+        run: docker push ghcr.io/${{ github.repository }}/chat-server:latest
