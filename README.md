@@ -70,9 +70,8 @@ resource "aws_security_group" "example" {
     Name = "std-security-group"
   }
 }
-
-</details>```
-
+```
+</details>
 
 ### Push du code sur github repo STD
 
