@@ -20,7 +20,7 @@ provider "aws" {
 }
 
 data "aws_ami" "ecs_optimized_ami" {
-  most_recent = true  
+  most_recent = true
   owners      = ["amazon"]
 
   filter {
