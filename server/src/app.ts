@@ -6,7 +6,15 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
+app.get('/', (req, res) => {
+    console.log('GET /');
+    console.log(__dirname)
+    res.sendFile(__dirname + '/index.html');
+})
+
+
 app.use(express.static('public'));
+
 
 const messages: { username: string; message: string; }[] = []; // Stocke les messages en mémoire
 

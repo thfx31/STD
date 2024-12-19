@@ -4,9 +4,8 @@
   "description": "Simple chat application using TypeScript, Socket.io, and Express",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "build": "tsc",
-    "dev": "ts-node src/app.ts"
+    "start": "bun run src/app.ts",
+    "dev": "bun run --hot src/app.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
