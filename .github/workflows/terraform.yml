@@ -1,4 +1,4 @@
-name: "Terraform"
+name: "Terraform and Docker Build"
 
 on:
   push:
@@ -16,39 +16,49 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Check for Terraform Changes
+        id: check-changes
+        run: |
+          git diff --quiet HEAD^ HEAD -- ${{ env.TERRAFORM_DIR }}
+          echo "CHANGED=$?" >> $GITHUB_ENV
+
       - name: Setup Terraform
+        if: env.CHANGED == '0'
         uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Format
+        if: env.CHANGED == '0'
         id: fmt
         run: terraform fmt -check
         working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Init
+        if: env.CHANGED == '0'
         id: init
         run: terraform init
         working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Validate
+        if: env.CHANGED == '0'
         id: validate
         run: terraform validate -no-color
         working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Plan
+        if: github.event_name == 'pull_request' && env.CHANGED == '0'
         id: plan
-        if: github.event_name == 'pull_request'
         run: terraform plan -no-color -input=false
         working-directory: ${{ env.TERRAFORM_DIR }}
         continue-on-error: true
 
       - name: Update Pull Request
+        if: github.event_name == 'pull_request' && env.CHANGED == '0'
         uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
         env:
           PLAN: ${{ steps.plan.outputs.stdout }}
         with:
@@ -76,13 +86,9 @@ jobs:
               body: output
             })
 
-      - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
-        working-directory: ${{ env.TERRAFORM_DIR }}
-
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.CHANGED == '0'
+        id: apply
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.TERRAFORM_DIR }}
 
