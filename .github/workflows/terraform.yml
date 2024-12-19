@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  TERRAFORM_DIR: ./terraform # Variable pour le dossier Terraform
+
 jobs:
   terraform:
     name: "Terraform"
@@ -16,31 +19,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Change folder
-        run: cd terraform && ls -la
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          # terraform_version: 0.13.0:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+        working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Init
         id: init
         run: terraform init
+        working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+        working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
         run: terraform plan -no-color -input=false
+        working-directory: ${{ env.TERRAFORM_DIR }}
         continue-on-error: true
 
       - name: Update Pull Request
@@ -76,7 +79,9 @@ jobs:
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
+        working-directory: ${{ env.TERRAFORM_DIR }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
+        working-directory: ${{ env.TERRAFORM_DIR }}
