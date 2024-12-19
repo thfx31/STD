@@ -33,6 +33,39 @@ IAM > Security credentials > Create access key
 ```
 &nbsp;
 
+### Push du code sur github repo STD
+
+```bash
+git add .
+git commit -m "change_message"
+git push
+```
+&nbsp;
+
+## Itération 1 : Mise en place de base avec GitHub Actions
+
+### Objectif :
+Créer une CI/CD permettant ....
+
+&nbsp;
+
+### Connexion Github Actions <=> Terraform Cloud
+- Création TF_API_TOKEN sur Terraform Cloud pour permettre à Github Actions de faire un "terraform login"
+
+```
+STD > Settings > API Tokens > Teams Tokens
+```
+&nbsp;
+
+![alt text](images/image1.png)
+
+&nbsp;
+
+- Copier le token TF_API_TOKEN sur Github Actions
+
+``` STD > Settings > Actions secrets and variables > New Repository Token```
+
+&nbsp;
 
 ### Création d’un premier fichier test.tf pour déployer un **SG**
 
@@ -86,32 +119,6 @@ resource "aws_security_group" "example" {
 }
 ```
 </details>
-
-&nbsp;
-
-
-### Push du code sur github repo STD
-
-```bash
-git add .
-git commit -m "change_message"
-git push
-```
-&nbsp;
-
-## Itération 1 : Mise en place de base avec GitHub Actions
-
-### Objectif :
-Créer une CI/CD permettant ....
-
-- Création TF_API_TOKEN sur Terraform Cloud
-
-```
-STD > Settings > API Tokens > Teams Tokens
-```
-&nbsp;
-
-![alt text](images/image1.png)
 
 &nbsp;
 
