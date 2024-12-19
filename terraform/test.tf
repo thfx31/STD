@@ -58,6 +58,37 @@ resource "aws_security_group" "allow_http_ssh" {
   }
 }
 
+resource "aws_security_group" "elasticache_sg" {
+  name        = "elasticache-sg"
+  description = "Security group for Elasticache"
+
+  ingress {
+    description = "Allow inbound traffic from EC2 instances"
+    from_port   = 11211
+    to_port     = 11211
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_elasticache_cluster" "example" {
+  cluster_id           = "my-redis-cluster"
+  engine               = "redis"
+  node_type            = "cache.t2.micro"
+  num_cache_nodes      = 1
+  parameter_group_name = "default.redis6.x"
+
+  security_group_ids = [aws_security_group.elasticache_sg.id]
+}
+
 resource "aws_instance" "ecs_instance" {
   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
 
@@ -65,9 +96,21 @@ resource "aws_instance" "ecs_instance" {
   instance_type = "t2.micro"
   key_name      = "SRE-KeyPair"
 
+  user_data = <<-EOF
+              #!/bin/bash
+              docker pull ghcr.io/thfx31/std/chat-server:latest
+
+              docker run -d -p 80:3000 \
+                -e ELASTICACHE_ENDPOINT=${aws_elasticache_cluster.example.configuration_endpoint} \
+                -e ELASTICACHE_PORT=11211 \
+                ghcr.io/thfx31/std/chat-server:latest
+              EOF
+
   tags = {
     Name = "STD-EC2"
   }
 }
 
-
+output "elasticache_endpoint" {
+  value = aws_elasticache_cluster.example.configuration_endpoint
+}
