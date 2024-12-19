@@ -8,6 +8,7 @@ on:
 
 env:
   TERRAFORM_DIR: ./terraform # Variable pour le dossier Terraform
+  TF_CLOUD_ORGANIZATION: "STD"
 
 jobs:
   terraform:
