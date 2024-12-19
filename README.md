@@ -6,6 +6,25 @@ améliorations en termes de performances, de scalabilité et de résilience.
 
 &nbsp;
 
+## Sommaire
+- [Paramétrage initial](#parametrage-initial)
+    - [Création du répo github STD](#creation-du-repo-github-std)
+    - [Création d'un compte Terraform Cloud par membre](#creation-d-un-compte-terraform-cloud-par-membre)
+    - [Mise en place des accès AWS dans terraform cloud](#mise-en-place-des-acces-aws-dans-terraform-cloud)
+    - [Push du code sur github repo STD](#push-du-code-sur-github-repo-std)
+    - [Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
+- [Itération 1 - Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
+    - [Objectif](#Objectif)
+    - [Connexion entre Github Actions et Terraform Cloud](#connexion-entre-github-actions-et-tTerraform-cloud)
+    - [Création d’un premier fichier test.tf pour déployer un SG](#creation-d'un-premier-fichier-test.tf-pour-deployer-un-sg)
+     - [Création d’un deuxième fichier test.tf pour déployer un EC2](#creation-d'un-deuxième-fichier-test.tf-pour-deployer-un-ec2)
+     - [Création d’un troisème fichier test.tf pour déployer un EC2 + SG](#creation-d'un-troisième-fichier-test.tf-pour-deployer-un-ec2-+-sg)
+    - [Tentative d'utilisation d'ECR](#tentative-d'utilisation-d'ERC)
+    - [Mise en place de GHRC](#mise-en-place-de-ghrc)
+
+&nbsp;
+---
+
 ## Paramétrage initial
 
 &nbsp;
@@ -17,7 +36,7 @@ améliorations en termes de performances, de scalabilité et de résilience.
 &nbsp;
 
 
-### Création d'un compte Terraform Cloud par collaborateurs
+### Création d'un compte Terraform Cloud par membre
 - Création commpte Hashicorp https://portal.cloud.hashicorp.com/sign-up
 - Création d'une organisation
 - Invitation des membres du groupe dans l'organisation
@@ -42,14 +61,14 @@ git push
 ```
 &nbsp;
 
-## Itération 1 : Mise en place de base avec GitHub Actions
+## Mise en place de base avec GitHub Actions
 
 ### Objectif :
 Créer une CI/CD permettant ....
 
 &nbsp;
 
-### Connexion Github Actions <=> Terraform Cloud
+### Connexion entre Github Actions et Terraform Cloud
 - Création TF_API_TOKEN sur Terraform Cloud pour permettre à Github Actions de faire un "terraform login"
 
 ```
@@ -292,3 +311,4 @@ output "ecr_repository_url" {
 &nbsp;
 
 ### Mise en place de GHRC
+
