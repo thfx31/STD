@@ -98,12 +98,13 @@ resource "aws_instance" "ecs_instance" {
   user_data = <<-EOF
               #!/bin/bash
               docker pull ghcr.io/thfx31/std/chat-server:latest
-
               docker run -d -p 80:3000 \
                 -e ELASTICACHE_ENDPOINT=${aws_elasticache_cluster.elasticache.configuration_endpoint} \
                 -e ELASTICACHE_PORT=11211 \
                 ghcr.io/thfx31/std/chat-server:latest
               EOF
+
+  depends_on = [aws_elasticache_cluster.elasticache]
 
   tags = {
     Name = "STD-EC2"
