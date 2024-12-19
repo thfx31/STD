@@ -59,7 +59,7 @@ resource "aws_security_group" "allow_http_ssh" {
 }
 
 resource "aws_security_group" "elasticache_sg" {
-  name        = "elasticache-sg"
+  name        = "std-elasticache-sg"
   description = "Security group for Elasticache"
 
   ingress {
@@ -79,12 +79,11 @@ resource "aws_security_group" "elasticache_sg" {
   }
 }
 
-resource "aws_elasticache_cluster" "example" {
-  cluster_id           = "my-redis-cluster"
-  engine               = "redis"
-  node_type            = "cache.t2.micro"
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis6.x"
+resource "aws_elasticache_cluster" "elasticache" {
+  cluster_id      = "std-elasticache"
+  engine          = "redis"
+  node_type       = "cache.t2.micro"
+  num_cache_nodes = 1
 
   security_group_ids = [aws_security_group.elasticache_sg.id]
 }
@@ -101,7 +100,7 @@ resource "aws_instance" "ecs_instance" {
               docker pull ghcr.io/thfx31/std/chat-server:latest
 
               docker run -d -p 80:3000 \
-                -e ELASTICACHE_ENDPOINT=${aws_elasticache_cluster.example.configuration_endpoint} \
+                -e ELASTICACHE_ENDPOINT=${aws_elasticache_cluster.elasticache.configuration_endpoint} \
                 -e ELASTICACHE_PORT=11211 \
                 ghcr.io/thfx31/std/chat-server:latest
               EOF
@@ -112,5 +111,5 @@ resource "aws_instance" "ecs_instance" {
 }
 
 output "elasticache_endpoint" {
-  value = aws_elasticache_cluster.example.configuration_endpoint
+  value = aws_elasticache_cluster.elasticache.configuration_endpoint
 }
