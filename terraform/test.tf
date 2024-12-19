@@ -34,7 +34,7 @@ resource "aws_instance" "ecs_instance" {
   instance_type = "t2.micro"
 
   tags = {
-    Name = "ECSOptimizedInstance"
+    Name = "STD-EC2"
   }
 }
 
