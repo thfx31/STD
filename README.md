@@ -9,16 +9,16 @@ améliorations en termes de performances, de scalabilité et de résilience.
 ## Sommaire
 - [Paramétrage initial](#parametrage-initial)
     - [Création du répo github STD](#creation-du-repo-github-std)
-    - [Création d'un compte Terraform Cloud par membre](#creation-d-un-compte-terraform-cloud-par-membre)
+    - [Création d'un compte Terraform Cloud par membre](#creation-d'un-compte-terraform-cloud-par-membre)
     - [Mise en place des accès AWS dans terraform cloud](#mise-en-place-des-acces-aws-dans-terraform-cloud)
     - [Push du code sur github repo STD](#push-du-code-sur-github-repo-std)
     - [Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
 - [Itération 1 - Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
     - [Objectif](#Objectif)
-    - [Connexion entre Github Actions et Terraform Cloud](#connexion-entre-github-actions-et-tTerraform-cloud)
+    - [Connexion entre Github Actions et Terraform Cloud](#connexion-entre-github-actions-et-Terraform-cloud)
     - [Création d’un premier fichier test.tf pour déployer un SG](#creation-d'un-premier-fichier-test.tf-pour-deployer-un-sg)
-     - [Création d’un deuxième fichier test.tf pour déployer un EC2](#creation-d'un-deuxième-fichier-test.tf-pour-deployer-un-ec2)
-     - [Création d’un troisème fichier test.tf pour déployer un EC2 + SG](#creation-d'un-troisième-fichier-test.tf-pour-deployer-un-ec2-+-sg)
+     - [Création d’un deuxième fichier test.tf pour déployer un EC2](#creation-d'un-deuxieme-fichier-test.tf-pour-deployer-un-ec2)
+     - [Création d’un troisème fichier test.tf pour déployer un EC2 + SG](#creation-d'un-troisieme-fichier-test.tf-pour-deployer-un-ec2-+-sg)
     - [Tentative d'utilisation d'ECR](#tentative-d'utilisation-d'ERC)
     - [Mise en place de GHRC](#mise-en-place-de-ghrc)
 
@@ -312,3 +312,16 @@ output "ecr_repository_url" {
 
 ### Mise en place de GHRC
 
+```yml
+
+  - name: Tag Docker Image
+    run: |
+      REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+      docker tag chat-server:latest ghcr.io/${REPO_NAME}/chat-server:latest
+
+  - name: Push Docker Image
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    run: |
+      REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+      docker push ghcr.io/${REPO_NAME}/chat-server:latest
+```
