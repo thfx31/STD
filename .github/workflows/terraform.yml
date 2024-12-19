@@ -85,3 +85,11 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.TERRAFORM_DIR }}
+
+      - name: Export ECR Repository URL
+        id: ecr_output
+        run: |
+          echo "ecr_repository_url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_ENV
+
+    outputs:
+      ecr_repository_url: ${{ steps.ecr_output.outputs.ecr_repository_url }}
