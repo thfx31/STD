@@ -29,13 +29,45 @@ data "aws_ami" "ecs_optimized_ami" {
   }
 }
 
+resource "aws_security_group" "allow_http_ssh" {
+  name        = "std-allow-http-ssh"
+  description = "Security group to allow HTTP and SSH access"
+
+  ingress {
+    description = "Allow HTTP traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow SSH traffic"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_instance" "ecs_instance" {
+  vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
+
   ami           = data.aws_ami.ecs_optimized_ami.id
   instance_type = "t2.micro"
+  key_name      = "SRE-KeyPair"
 
   tags = {
     Name = "STD-EC2"
   }
 }
 
- 
+
