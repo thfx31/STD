@@ -310,7 +310,7 @@ output "ecr_repository_url" {
 
 &nbsp;
 
-### Mise en place de GHRC
+### Mise en place de GHCR (Github Container Registry)
 
 ```yml
 
