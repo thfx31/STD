@@ -19,7 +19,13 @@ jobs:
         run: docker build . --pull -t chat-server:latest
       - name: Github Login
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Tag Docker Image
-        run: docker tag chat-server:latest ghcr.io/${{ github.repository }}/chat-server:latest
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker tag chat-server:latest ghcr.io/${REPO_NAME}/chat-server:latest
+
       - name: Push Docker Image
-        run: docker push ghcr.io/${{ github.repository }}/chat-server:latest
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${REPO_NAME}/chat-server:latest
