@@ -92,18 +92,28 @@ resource "aws_security_group" "example" {
 
 ### Push du code sur github repo STD
 
-
+```bash
+git add .
+git commit -m "change_message"
+git push
+```
 &nbsp;
-
 
 ## Itération 1 : Mise en place de base avec GitHub Actions
 
 ### Objectif :
 Créer une CI/CD permettant ....
 
-- Création TF_API_TOKEN
+- Création TF_API_TOKEN sur Terraform Cloud
 
+```
+STD > Settings > API Tokens > Teams Tokens
+```
+&nbsp;
 
+![alt text](images/image1.png)
+
+&nbsp;
 
 ### Création d’un deuxième fichier test.tf pour déployer un **EC2**
 
