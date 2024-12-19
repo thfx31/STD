@@ -1,6 +1,5 @@
 terraform {
   cloud {
-
     organization = "STD"
 
     workspaces {
@@ -20,25 +19,23 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-resource "aws_security_group" "example" {
-  name        = "std-security-group"
-  description = "STD security group"
+data "aws_ami" "ecs_optimized_ami" {
+  most_recent = true
+  owners      = ["amazon"]
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "std-security-group"
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-ecs-hvm-2.0.202*-x86_64-ebs"]
   }
 }
+
+resource "aws_instance" "ecs_instance" {
+  ami           = data.aws_ami.ecs_optimized_ami.id
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "STD-EC2"
+  }
+}
+
+ 
