@@ -17,12 +17,12 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2"
+  region = "eu-west-1"
 }
 
 resource "aws_security_group" "example" {
-  name        = "example-security-group"
-  description = "Example security group"
+  name        = "std-security-group"
+  description = "STD security group"
 
   ingress {
     from_port   = 22
@@ -39,6 +39,6 @@ resource "aws_security_group" "example" {
   }
 
   tags = {
-    Name = "example-security-group"
+    Name = "std-security-group"
   }
 }
