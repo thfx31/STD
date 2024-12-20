@@ -16,7 +16,7 @@ variable "vpc_id" {
   default     = "vpc-0035b5ae8bbbefd3f"
 }
 
-variable "subnets" {
+variable "public_subnets" {
   description = "Liste des sous-réseaux pour les instances et le Load Balancer"
   type        = list(string)
   default = ["subnet-02ae3d0545ef9967e",
