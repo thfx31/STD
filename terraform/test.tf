@@ -63,11 +63,11 @@ resource "aws_security_group" "elasticache_sg" {
   description = "Security group for Elasticache"
 
   ingress {
-    description = "Allow inbound traffic from EC2 instances"
-    from_port   = 11211
-    to_port     = 11211
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = "Allow inbound traffic from EC2 instances"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.allow_http_ssh.id]
   }
 
   egress {
