@@ -95,13 +95,14 @@ resource "aws_launch_template" "std_launch_template" {
   instance_type = "t2.micro"
   key_name      = "SRE-KeyPair"
 
-  user_data = <<-EOF
+  user_data = base64encode(<<-EOF
               #!/bin/bash
               docker pull ghcr.io/thfx31/std/chat-server:latest
               docker run -d -p 80:3000 \
                 -e ELASTICACHE_ENDPOINT=${aws_elasticache_replication_group.elasticache.primary_endpoint_address} \
                 ghcr.io/thfx31/std/chat-server:latest
               EOF
+  )
 
   security_group_names = [aws_security_group.allow_http_ssh.name]
 
