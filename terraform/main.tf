@@ -89,7 +89,7 @@ resource "aws_elasticache_replication_group" "elasticache" {
   security_group_ids = [aws_security_group.elasticache_sg.id]
 }
 
-resource "aws_launch_template" "main" {
+resource "aws_launch_template" "std_launch_template" {
   name_prefix   = "std-launch-template"
   image_id      = data.aws_ami.ecs_optimized_ami.id
   instance_type = "t2.micro"
