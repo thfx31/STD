@@ -89,10 +89,9 @@ resource "aws_elasticache_replication_group" "elasticache" {
   security_group_ids = [aws_security_group.elasticache_sg.id]
 }
 
-resource "aws_instance" "ecs_instance" {
-  vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
-
-  ami           = data.aws_ami.ecs_optimized_ami.id
+resource "aws_launch_template" "main" {
+  name_prefix   = "std-launch-template"
+  image_id      = data.aws_ami.ecs_optimized_ami.id
   instance_type = "t2.micro"
   key_name      = "SRE-KeyPair"
 
@@ -104,11 +103,53 @@ resource "aws_instance" "ecs_instance" {
                 ghcr.io/thfx31/std/chat-server:latest
               EOF
 
+  security_group_names = [aws_security_group.allow_http_ssh.name]
 
   tags = {
     Name = "STD-EC2"
   }
 }
+
+resource "aws_autoscaling_group" "std_asg" {
+  desired_capacity     = 2
+  max_size             = 1
+  min_size             = 3
+  vpc_zone_identifier  = ["subnet-02ae3d0545ef9967e", "subnet-01bac5268bd103c55", "subnet-0655f72c900baddc5"]
+  launch_template {
+    id      = aws_launch_template.std_launch_template.id
+    version = "$Latest"
+  }
+
+  target_group_arns = [aws_lb_target_group.TP_TargetGroup.arn]
+
+  tag {
+    key                 = "Name"
+    value               = "STD-EC2"
+    propagate_at_launch = true
+  }
+}
+
+
+# resource "aws_instance" "ecs_instance" {
+#   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
+
+#   ami           = data.aws_ami.ecs_optimized_ami.id
+#   instance_type = "t2.micro"
+#   key_name      = "SRE-KeyPair"
+
+#   user_data = <<-EOF
+#               #!/bin/bash
+#               docker pull ghcr.io/thfx31/std/chat-server:latest
+#               docker run -d -p 80:3000 \
+#                 -e ELASTICACHE_ENDPOINT=${aws_elasticache_replication_group.elasticache.primary_endpoint_address} \
+#                 ghcr.io/thfx31/std/chat-server:latest
+#               EOF
+
+
+#   tags = {
+#     Name = "STD-EC2"
+#   }
+# }
 
 output "elasticache_endpoint" {
   value = aws_elasticache_replication_group.elasticache.primary_endpoint_address
@@ -139,37 +180,4 @@ resource "aws_lb_listener" "TP_Listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.TP_TargetGroup.arn
   }
-}
-
-variable "region" {
-  description = "Région AWS où déployer les ressources"
-  type        = string
-  default     = "eu-west-1"
-}
-
-
-variable "instance_type" {
-  description = "Type d'instance EC2"
-  type        = string
-  default     = "t2.micro"
-}
-
-
-variable "vpc_id" {
-  description = "ID du VPC où déployer les ressources"
-  type        = string
-  default     = "vpc-0035b5ae8bbbefd3f"
-}
-
-variable "subnets" {
-  description = "Liste des sous-réseaux pour les instances et le Load Balancer"
-  type        = list(string)
-  default = ["subnet-02ae3d0545ef9967e",
-  "subnet-01bac5268bd103c55"]
-}
-
-variable "security_group" {
-  description = "ID du Security Group à utiliser"
-  type        = string
-  default     = "sg-0b92c45c5cd41a041"
 }
