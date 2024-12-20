@@ -343,7 +343,7 @@ resource "aws_elasticache_replication_group" "elasticache" {
 &nbsp;
 
 
-### Lauch Template 
+### Launch Template 
 ```HCL
 resource "aws_launch_template" "std_launch_template" {
   name_prefix   = "std-launch-template"
@@ -376,7 +376,7 @@ resource "aws_launch_template" "std_launch_template" {
 ```HCL
 resource "aws_autoscaling_group" "std_asg" {
   desired_capacity = 2
-  max_size         = 4 # Modifié pour pouvoir ajouter plus d'instances si nécessaire
+  max_size         = 4
   min_size         = 1
 
   launch_template {
@@ -403,6 +403,17 @@ resource "aws_lb" "std_lb" {
   }
 }
 ```
+&nbsp;
 
+### Stickiness
+> Nous utilisons le websocket entre l'instance et notre client.
+L'activation de la stickiness (persistance de session) permet de maintenir une session stable entre le client et le serveur
 
-
+```HCL
+  # Configuration des sessions persistantes pour WebSocket
+  stickiness {
+    enabled         = true
+    type            = "lb_cookie"
+    cookie_duration = 86400
+  }
+```
