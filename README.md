@@ -287,33 +287,32 @@ L'objectif est de stocker l'image docker du tchat sur le registery AWS
   <summary>Cliquer pour dérouler le code - ecr.tf</summary>
 
 ```hcl
-
 resource "aws_ecr_repository" "std_chat" {
   name                 = "std-chat"
   image_tag_mutability = "MUTABLE"
 }
 ```
+</details>
 
 <details>
   <summary>Cliquer pour dérouler le code - output.tf</summary>
 
 ```hcl
-
 output "ecr_repository_url" {
   value = aws_ecr_repository.std_chat.repository_url
 }
 ```
 </details>
 
+&nbsp;
 
-/!\ Abandon au profit de GHRC (solution native de Github)
+**/!\ Abandon au profit de GHRC (solution native de Github)**
 
 &nbsp;
 
 ### Mise en place de GHCR (Github Container Registry)
 
 ```yml
-
   - name: Tag Docker Image
     run: |
       REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
@@ -325,3 +324,7 @@ output "ecr_repository_url" {
       REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
       docker push ghcr.io/${REPO_NAME}/chat-server:latest
 ```
+
+&nbsp;
+
+## Itération 2 - Ajout de scalabilité avec Auto-scaling et Load Balancer
