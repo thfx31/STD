@@ -324,7 +324,85 @@ output "ecr_repository_url" {
       REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
       docker push ghcr.io/${REPO_NAME}/chat-server:latest
 ```
+&nbsp;
+
+## Itération 2 - Ajout de scalabilité avec Auto-scaling, Load Balancer et Elastic Cache
 
 &nbsp;
 
-## Itération 2 - Ajout de scalabilité avec Auto-scaling et Load Balancer
+### Elastic cache
+Ajout d'un replication_group
+```HCL
+resource "aws_elasticache_replication_group" "elasticache" {
+  replication_group_id = "std-elasticache"
+  description          = "STD Elasticache"
+  node_type            = "cache.t2.micro"
+  num_cache_clusters   = 1
+  engine               = "redis"
+```
+&nbsp;
+
+
+### Lauch Template 
+```HCL
+resource "aws_launch_template" "std_launch_template" {
+  name_prefix   = "std-launch-template"
+  image_id      = data.aws_ami.ecs_optimized_ami.id
+  instance_type = var.instance_type
+  placement {
+    availability_zone = "${var.region}a"
+  }
+
+  key_name = "SRE-KeyPair"
+
+  user_data = base64encode(<<-EOF
+              #!/bin/bash
+              docker pull ghcr.io/thfx31/std/chat-server:latest
+              docker run -d -p 80:3000 \
+                -e ELASTICACHE_ENDPOINT=${var.elasticache_endpoint} \
+                ghcr.io/thfx31/std/chat-server:latest
+              EOF
+  )
+
+  network_interfaces {
+    security_groups = [aws_security_group.std_ec2_sg.id]
+  }
+}
+```
+
+&nbsp;
+
+### Auto Scaling Group
+```HCL
+resource "aws_autoscaling_group" "std_asg" {
+  desired_capacity = 2
+  max_size         = 4 # Modifié pour pouvoir ajouter plus d'instances si nécessaire
+  min_size         = 1
+
+  launch_template {
+    id      = var.launch_template_id
+    version = "$Latest"
+  }
+
+  target_group_arns = var.target_group_arns
+}
+```
+&nbsp;
+
+### Load Balancer
+```HCL
+resource "aws_lb" "std_lb" {
+  name                       = "std-lb"
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.std_lb_sg.id]
+  subnets                    = var.public_subnets
+  enable_deletion_protection = false
+  tags = {
+    Name = "std-lb"
+  }
+}
+```
+
+
+
