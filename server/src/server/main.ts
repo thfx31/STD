@@ -12,7 +12,7 @@ const initializeServer = async () => {
   const server = createServer(app);
 
   console.log("🚀 Starting server...");
-  console.log(`🔌 Elasticache endpoint: redis://${env.ELASTICACHE_ENDPOINT}:6379`);
+  console.log(`🔌 Elasticache endpoint: redis://${env.ELASTICACHE_ENDPOINT}`);
 
   // Redis setup
   const redisClient = createRedisClient();

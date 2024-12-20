@@ -6,6 +6,6 @@ export const REDIS_KEY = "chat_messages";
 
 export const createRedisClient = () => {
     return createClient({
-        url: `redis://${env.ELASTICACHE_ENDPOINT}:6379`
+        url: `redis://${env.ELASTICACHE_ENDPOINT}`
     });
 };
