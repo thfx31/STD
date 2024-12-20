@@ -55,6 +55,13 @@ resource "aws_lb_target_group" "std_target_group" {
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
+  # Configuration des sessions persistantes pour WebSocket
+  stickiness {
+    enabled         = true
+    type            = "lb_cookie"
+    cookie_duration = 86400
+  }
+
   health_check {
     path                = "/"
     interval            = 30

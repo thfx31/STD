@@ -1,6 +1,7 @@
 resource "aws_security_group" "elasticache_sg" {
   name        = "std-elasticache-sg"
   description = "Security group for Elasticache"
+  vpc_id      = var.vpc_id
 
   ingress {
     description     = "Allow inbound traffic from EC2 instances"
