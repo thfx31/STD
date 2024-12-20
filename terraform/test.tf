@@ -79,11 +79,12 @@ resource "aws_security_group" "elasticache_sg" {
   }
 }
 
-resource "aws_elasticache_cluster" "elasticache" {
-  cluster_id      = "std-elasticache"
-  engine          = "redis"
-  node_type       = "cache.t2.micro"
-  num_cache_nodes = 1
+resource "aws_elasticache_replication_group" "elasticache" {
+  replication_group_id = "std-elasticache"
+  description          = "STD Elasticache"
+  node_type            = "cache.t2.micro"
+  num_cache_clusters   = 1
+  engine               = "redis"
 
   security_group_ids = [aws_security_group.elasticache_sg.id]
 }
@@ -99,12 +100,10 @@ resource "aws_instance" "ecs_instance" {
               #!/bin/bash
               docker pull ghcr.io/thfx31/std/chat-server:latest
               docker run -d -p 80:3000 \
-                -e ELASTICACHE_ENDPOINT=${aws_elasticache_cluster.elasticache.configuration_endpoint} \
-                -e ELASTICACHE_PORT=11211 \
+                -e ELASTICACHE_ENDPOINT=${aws_elasticache_replication_group.elasticache.primary_endpoint_address} \
                 ghcr.io/thfx31/std/chat-server:latest
               EOF
 
-  depends_on = [aws_elasticache_cluster.elasticache]
 
   tags = {
     Name = "STD-EC2"
@@ -112,5 +111,5 @@ resource "aws_instance" "ecs_instance" {
 }
 
 output "elasticache_endpoint" {
-  value = aws_elasticache_cluster.elasticache.configuration_endpoint
+  value = aws_elasticache_replication_group.elasticache.primary_endpoint_address
 }
