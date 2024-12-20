@@ -111,10 +111,10 @@ resource "aws_launch_template" "main" {
 }
 
 resource "aws_autoscaling_group" "std_asg" {
-  desired_capacity     = 2
-  max_size             = 1
-  min_size             = 3
-  vpc_zone_identifier  = ["subnet-02ae3d0545ef9967e", "subnet-01bac5268bd103c55", "subnet-0655f72c900baddc5"]
+  desired_capacity    = 2
+  max_size            = 1
+  min_size            = 3
+  vpc_zone_identifier = ["subnet-02ae3d0545ef9967e", "subnet-01bac5268bd103c55", "subnet-0655f72c900baddc5"]
   launch_template {
     id      = aws_launch_template.std_launch_template.id
     version = "$Latest"
