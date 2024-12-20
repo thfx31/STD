@@ -43,7 +43,17 @@ module "autoscaling_group" {
 }
 
 module "elasticache" {
-  source                = "./elastic-cache"
-  ec2_security_group_id = module.ec2_launch_template.ec2_security_group_id
-  vpc_id                = var.vpc_id
+  source                        = "./elastic-cache"
+  ec2_security_group_id         = module.ec2_launch_template.ec2_security_group_id
+  vpc_id                        = var.vpc_id
+  ecs_security_group_fargate_id = module.ecs.ecs_security_group_fargate_id
+}
+
+
+module "ecs" {
+  source               = "./ecs"
+  public_subnets       = var.public_subnets
+  vpc_id               = var.vpc_id
+  elasticache_endpoint = module.elasticache.elastic_cache_endpoint
+  region               = var.region
 }
