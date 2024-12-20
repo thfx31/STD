@@ -113,3 +113,63 @@ resource "aws_instance" "ecs_instance" {
 output "elasticache_endpoint" {
   value = aws_elasticache_replication_group.elasticache.primary_endpoint_address
 }
+
+resource "aws_lb" "TP_LoadBalancer" {
+  name               = "STD-load-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [var.security_group]
+  subnets            = var.subnets
+}
+
+resource "aws_lb_target_group" "TP_TargetGroup" {
+  name        = "tp-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
+}
+
+resource "aws_lb_listener" "TP_Listener" {
+  load_balancer_arn = aws_lb.TP_LoadBalancer.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.TP_TargetGroup.arn
+  }
+}
+
+variable "region" {
+  description = "Région AWS où déployer les ressources"
+  type        = string
+  default     = "eu-west-1"
+}
+
+
+variable "instance_type" {
+  description = "Type d'instance EC2"
+  type        = string
+  default     = "t2.micro"
+}
+
+
+variable "vpc_id" {
+  description = "ID du VPC où déployer les ressources"
+  type        = string
+  default     = "vpc-0035b5ae8bbbefd3f"
+}
+
+variable "subnets" {
+  description = "Liste des sous-réseaux pour les instances et le Load Balancer"
+  type        = list(string)
+  default = ["subnet-02ae3d0545ef9967e",
+  "subnet-01bac5268bd103c55"]
+}
+
+variable "security_group" {
+  description = "ID du Security Group à utiliser"
+  type        = string
+  default     = "sg-0b92c45c5cd41a041"
+}
