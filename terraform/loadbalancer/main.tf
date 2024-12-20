@@ -23,54 +23,55 @@ resource "aws_security_group" "std_lb_sg" {
   }
 }
 
-# Création de l'Application Load Balancer
-resource "aws_lb" "std_lb" {
-  name                       = "std-lb"
-  internal                   = false
-  load_balancer_type         = "application"
-  security_groups            = [aws_security_group.std_lb_sg.id]
-  subnets                    = var.public_subnets
-  enable_deletion_protection = false
+
+resource "aws_alb" "std_lb" {
+  name            = "std-alb"
+  security_groups = [aws_security_group.std_lb_sg.id]
+  subnets         = var.public_subnets
+
   tags = {
-    Name = "std-lb"
+    Name = "std-alb"
   }
 }
 
 # Création d'un listener HTTP pour le load balancer
-resource "aws_lb_listener" "std_listener" {
-  load_balancer_arn = aws_lb.std_lb.arn
+resource "aws_alb_listener" "std_listener" {
+  load_balancer_arn = aws_alb.std_lb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.std_target_group.arn
+    target_group_arn = aws_alb_target_group.std_target_group.arn
   }
 }
 
-# Création du Target Group pour le Load Balancer
-resource "aws_lb_target_group" "std_target_group" {
-  name     = "std-target-group"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
+resource "aws_alb_target_group" "std_target_group" {
+  name                 = "std-target-group"
+  port                 = 80
+  protocol             = "HTTP"
+  vpc_id               = var.vpc_id
+  deregistration_delay = 5
 
-  # Configuration des sessions persistantes pour WebSocket
+  target_type = "ip"
+
   stickiness {
-    enabled         = true
     type            = "lb_cookie"
-    cookie_duration = 86400
+    cookie_duration = 3600
   }
 
   health_check {
-    path                = "/"
-    interval            = 30
-    timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
+    interval            = 60
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 30
   }
 
   tags = {
     Name = "std-target-group"
   }
+
+  depends_on = [aws_alb.std_lb]
 }

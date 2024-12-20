@@ -29,7 +29,7 @@ resource "aws_ecs_task_definition" "std-ecs-task" {
 
   container_definitions = jsonencode([
     {
-      name   = "std-ecs-debian"
+      name   = "std-ecs-chat"
       image  = "ghcr.io/thfx31/std/chat-server:latest"
       cpu    = 1024
       memory = 2048
@@ -72,10 +72,20 @@ resource "aws_ecs_service" "std-ecs-service" {
   name            = "std-ecs-service"
   cluster         = aws_ecs_cluster.std-ecs-cluster.id
   task_definition = aws_ecs_task_definition.std-ecs-task.arn
-  desired_count   = 1
+  desired_count   = 2
+
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent         = 200
+
 
   enable_execute_command = true
   launch_type            = "FARGATE"
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = "std-ecs-chat"
+    container_port   = 3000
+  }
 
   network_configuration {
     subnets          = var.public_subnets
