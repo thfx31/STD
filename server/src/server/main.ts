@@ -27,7 +27,7 @@ const initializeServer = async () => {
   app.use("/api", apiRoutes);
 
   // Start server
-  server.listen(3001, () => {
+  server.listen(3000, () => {
     console.log("Server is listening!");
   });
 
