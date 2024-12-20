@@ -22,8 +22,8 @@ améliorations en termes de performances, de scalabilité et de résilience.
     - [Tentative d'utilisation d'ECR](#tentative-d'utilisation-d'ERC)
     - [Mise en place de GHRC](#mise-en-place-de-ghrc)
 
-&nbsp;
 ---
+&nbsp;
 
 ## Paramétrage initial
 
@@ -47,9 +47,9 @@ améliorations en termes de performances, de scalabilité et de résilience.
 ### Mise en place des accès AWS dans terraform cloud
 - Création d'une clé ...
 
-```
-IAM > Security credentials > Create access key
-```
+
+> IAM > Security credentials > Create access key
+
 &nbsp;
 
 ### Push du code sur github repo STD
@@ -64,16 +64,15 @@ git push
 ## Mise en place de base avec GitHub Actions
 
 ### Objectif :
-Créer une CI/CD permettant ....
+Créer une CI/CD permettant de déployer notre infrastructure en s'appuyant sur Terraform Cloud (qui stockera les states)
 
 &nbsp;
 
 ### Connexion entre Github Actions et Terraform Cloud
 - Création TF_API_TOKEN sur Terraform Cloud pour permettre à Github Actions de faire un "terraform login"
 
-```
-STD > Settings > API Tokens > Teams Tokens
-```
+> STD > Settings > API Tokens > Teams Tokens
+
 &nbsp;
 
 ![alt text](images/image1.png)
@@ -82,7 +81,7 @@ STD > Settings > API Tokens > Teams Tokens
 
 - Copier le token TF_API_TOKEN sur Github Actions
 
-``` STD > Settings > Actions secrets and variables > New Repository Token```
+> STD > Settings > Actions secrets and variables > New Repository Token
 
 &nbsp;
 
@@ -417,3 +416,6 @@ L'activation de la stickiness (persistance de session) permet de maintenir une s
     cookie_duration = 86400
   }
 ```
+&nbsp;
+
+## Intégration d'ECS (WIP)
