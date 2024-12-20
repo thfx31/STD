@@ -115,36 +115,36 @@ output "elasticache_endpoint" {
 }
 
 resource "aws_lb" "TP_LoadBalancer" {
-  name               = "STD-load-balancer" 
-  internal           = false                  
-  load_balancer_type = "application"          
-  security_groups    = [var.security_group]   
-  subnets            = var.subnets            
+  name               = "STD-load-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [var.security_group]
+  subnets            = var.subnets
 }
 
 resource "aws_lb_target_group" "TP_TargetGroup" {
-  name        = "tp-target-group"       
-  port        = 80                     
-  protocol    = "HTTP"                 
-  vpc_id      = var.vpc_id             
-  target_type = "instance"             
+  name        = "tp-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
 }
 
 resource "aws_lb_listener" "TP_Listener" {
-  load_balancer_arn = aws_lb.TP_LoadBalancer.arn 
-  port              = 80                         
-  protocol          = "HTTP"                     
+  load_balancer_arn = aws_lb.TP_LoadBalancer.arn
+  port              = 80
+  protocol          = "HTTP"
 
   default_action {
-    type             = "forward"                           
-    target_group_arn = aws_lb_target_group.TP_TargetGroup.arn 
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.TP_TargetGroup.arn
   }
 }
 
 variable "region" {
   description = "Région AWS où déployer les ressources"
   type        = string
-  default     = "eu-west-1" 
+  default     = "eu-west-1"
 }
 
 
