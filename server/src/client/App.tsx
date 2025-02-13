@@ -32,8 +32,10 @@ const App = () => {
 		}
 	};
 
+	//set height of the chat to dynamic height
+
 	return (
-		<div className="h-screen overflow-hidden bg-gray-50 flex flex-col w-screen">
+		<div className=" overflow-hidden bg-gray-50 flex flex-col w-screen h-[100dvh]">
 			{!isUsernameSet ? (
 				<UsernameForm
 					username={username}
