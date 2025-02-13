@@ -20,6 +20,7 @@ const App = () => {
 			.catch((err) => console.error("Error fetching server ID:", err));
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: to scroll to the bottom of the chat when a new message is sent
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, [messages]);
@@ -51,7 +52,10 @@ const App = () => {
 									<div className="space-y-6">
 										{messages.map((msg, index) => (
 											<ChatMessage
-												key={index}
+												key={`${msg}-${
+													// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+													index
+												}`}
 												message={msg}
 												currentUsername={username}
 											/>
@@ -60,7 +64,6 @@ const App = () => {
 									</div>
 								</div>
 							</div>
-							{/* Formulaire fixe en bas */}
 							<MessageForm username={username} onSendMessage={sendMessage} />
 						</div>
 					</main>
