@@ -1,4 +1,4 @@
-# SDT - Projet Chat Server (WIP)
+# SDT - Projet Chat Server
 
 Ce document a pour objectif de détailler les étapes de conception, d'implémentation et d'évolution d'un
 projet de serveur de chat. L’architecture s’améliore au fil des itérations, chaque étape apportant des
@@ -6,22 +6,31 @@ améliorations en termes de performances, de scalabilité et de résilience.
 
 &nbsp;
 
-## Sommaire
-- [Paramétrage initial](#parametrage-initial)
-    - [Création du répo github STD](#creation-du-repo-github-std)
-    - [Création d'un compte Terraform Cloud par membre](#creation-d'un-compte-terraform-cloud-par-membre)
-    - [Mise en place des accès AWS dans terraform cloud](#mise-en-place-des-acces-aws-dans-terraform-cloud)
-    - [Push du code sur github repo STD](#push-du-code-sur-github-repo-std)
-    - [Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
-- [Itération 1 - Mise en place de base avec GitHub Actions](#mise-en-place-de-base-avec-github-actions)
-    - [Objectif](#Objectif)
-    - [Connexion entre Github Actions et Terraform Cloud](#connexion-entre-github-actions-et-Terraform-cloud)
-    - [Création d’un premier fichier test.tf pour déployer un SG](#creation-d'un-premier-fichier-test.tf-pour-deployer-un-sg)
-     - [Création d’un deuxième fichier test.tf pour déployer un EC2](#creation-d'un-deuxieme-fichier-test.tf-pour-deployer-un-ec2)
-     - [Création d’un troisème fichier test.tf pour déployer un EC2 + SG](#creation-d'un-troisieme-fichier-test.tf-pour-deployer-un-ec2-+-sg)
-    - [Tentative d'utilisation d'ECR](#tentative-d'utilisation-d'ERC)
-    - [Mise en place de GHRC](#mise-en-place-de-ghrc)
+- [Paramétrage initial](#paramétrage-initial)
+  - [Création du repo GitHub STD](#création-du-repo-github-std)
+  - [Création d'un compte Terraform Cloud par membre](#création-dun-compte-terraform-cloud-par-membre)
+  - [Mise en place des accès AWS dans Terraform Cloud](#mise-en-place-des-accès-aws-dans-terraform-cloud)
+  - [Push du code sur GitHub repo STD](#push-du-code-sur-github-repo-std)
+  - [Connexion entre GitHub Actions et Terraform Cloud](#connexion-entre-github-actions-et-terraform-cloud)
 
+- [Itération 1 - Mise en place de base avec GitHub Actions](#itération-1---mise-en-place-de-base-avec-github-actions)
+  - [Création d’un premier fichier test.tf pour déployer un SG](#création-dun-premier-fichier-testtf-pour-déployer-un-sg)
+  - [Création d’un deuxième fichier test.tf pour déployer un EC2](#création-dun-deuxième-fichier-testtf-pour-déployer-un-ec2)
+  - [Création d’un troisième fichier test.tf pour déployer un EC2 + SG](#création-dun-troisième-fichier-testtf-pour-déployer-un-ec2--sg)
+  - [Tentative d'utilisation d'ECR](#tentative-dutilisation-decr)
+  - [Mise en place de GHCR (GitHub Container Registry)](#mise-en-place-de-ghcr-github-container-registry)
+
+- [Itération 2 - Ajout de scalabilité avec Auto-scaling, Load Balancer et Elastic Cache](#itération-2---ajout-de-scalabilité-avec-auto-scaling-load-balancer-et-elastic-cache)
+  - [Elastic Cache](#elastic-cache)
+  - [Launch Template](#launch-template)
+  - [Auto Scaling Group](#auto-scaling-group)
+  - [Load Balancer](#load-balancer)
+  - [Stickiness](#stickiness)
+
+- [Itération 3 - Utilisation ECS - Fargate](#itération-3---utilisation-ecs---fargate)
+  - [Description de l'exécution des containers](#description-de-lexécution-des-containers)
+  - [Exécution de la task définition](#exécution-de-la-task-définition)
+  - [Rôle permettant d'accéder aux données du container et autoriser les logs](#rôle-permettant-daccéder-aux-données-du-container-et-autoriser-les-logs)
 ---
 &nbsp;
 
@@ -30,7 +39,7 @@ améliorations en termes de performances, de scalabilité et de résilience.
 &nbsp;
 
 
-### Création du répo github STD
+### Création du repo github STD
 - ajout des membres du groupe
 
 &nbsp;
@@ -45,7 +54,7 @@ améliorations en termes de performances, de scalabilité et de résilience.
 
 
 ### Mise en place des accès AWS dans terraform cloud
-- Création d'une clé ...
+- Création d'une clé API AWS
 
 
 > IAM > Security credentials > Create access key
@@ -61,17 +70,19 @@ git push
 ```
 &nbsp;
 
-## Mise en place de base avec GitHub Actions
-
-### Objectif :
-Créer une CI/CD permettant de déployer notre infrastructure en s'appuyant sur Terraform Cloud (qui stockera les states)
-
-&nbsp;
-
 ### Connexion entre Github Actions et Terraform Cloud
 - Création TF_API_TOKEN sur Terraform Cloud pour permettre à Github Actions de faire un "terraform login"
 
+&nbsp;
+
 > STD > Settings > API Tokens > Teams Tokens
+
+&nbsp;
+
+## Itération 1 - Mise en place de base avec GitHub Actions
+
+### Objectif :
+Créer une CI/CD permettant de déployer notre infrastructure en s'appuyant sur Terraform Cloud (qui stockera les states)
 
 &nbsp;
 
@@ -408,7 +419,7 @@ resource "aws_lb" "std_lb" {
 > Nous utilisons le websocket entre l'instance et notre client.
 L'activation de la stickiness (persistance de session) permet de maintenir une session stable entre le client et le serveur
 
-```HCL
+```hcl
   # Configuration des sessions persistantes pour WebSocket
   stickiness {
     enabled         = true
@@ -418,4 +429,166 @@ L'activation de la stickiness (persistance de session) permet de maintenir une s
 ```
 &nbsp;
 
-## Intégration d'ECS (WIP)
+
+## Itération 3 - Utilisation ECS - Fargate
+
+> L'objectif est de simplifier la gestion en déployant directement sur un service managé ECS (et abandonner EC2)
+
+> Nous utiliserons Fargate afin de ne pas avoir à gérer la couche infra.
+
+### Description de l'exécution des containers
+<details>
+  <summary>Task definition</summary>
+
+```hcl
+resource "aws_ecs_task_definition" "std-ecs-task" {
+  family                   = "std-ecs-task"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 1024
+  memory                   = 2048
+
+  task_role_arn      = aws_iam_role.ecs_task_role_chat.arn
+  execution_role_arn = aws_iam_role.ecs_execution_role_chat.arn
+
+  container_definitions = jsonencode([
+    {
+      name   = "std-ecs-chat"
+      image  = "ghcr.io/thfx31/std/chat-server:latest"
+      cpu    = 1024
+      memory = 2048
+      portMappings = [
+        {
+          containerPort = 3000
+          hostPort      = 3000
+        }
+      ]
+
+      environment = [
+        {
+          name  = "ELASTICACHE_ENDPOINT"
+          value = var.elasticache_endpoint
+        }
+      ]
+
+      logConfiguration = {
+        "logDriver" = "awslogs",
+        "options" = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_cluster.name,
+          "awslogs-region"        = var.region,
+          "awslogs-stream-prefix" = "std-ecs-task"
+        }
+      },
+
+      linuxParameters = {
+        "initProcessEnabled" = true
+      }
+    }
+  ])
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+}
+```
+</details>
+
+
+&nbsp;
+
+### Exécution de la task définition
+<details>
+  <summary>ECS Service</summary>
+
+```hcl
+resource "aws_ecs_service" "std-ecs-service" {
+  name            = "std-ecs-service"
+  cluster         = aws_ecs_cluster.std-ecs-cluster.id
+  task_definition = aws_ecs_task_definition.std-ecs-task.arn
+  desired_count   = 2
+
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent         = 200
+
+
+  enable_execute_command = true
+  launch_type            = "FARGATE"
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = "std-ecs-chat"
+    container_port   = 3000
+  }
+
+  network_configuration {
+    subnets          = var.public_subnets
+    security_groups  = [aws_security_group.chat.id]
+    assign_public_ip = true
+  }
+}
+```
+</details>
+
+&nbsp;
+
+### Rôle permettant d'accéder aux données du containers et autoriser les logs
+<details>
+  <summary>Role chat</summary>
+
+```hcl
+resource "aws_iam_role" "ecs_task_role_chat" {
+  name = "std-ecs-task-role-chat"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "requirements-for-ecs-exec"
+
+    policy = jsonencode({
+      Version : "2012-10-17",
+      Statement : [
+        {
+          Sid : "AllowECSExecActions",
+          Effect : "Allow",
+          Action : [
+            "ssmmessages:CreateControlChannel",
+            "ssmmessages:CreateDataChannel",
+            "ssmmessages:OpenControlChannel",
+            "ssmmessages:OpenDataChannel",
+            "ecs:ExecuteCommand",
+            "ssm:SendCommand",
+            "ssm:DescribeInstanceInformation",
+            "ssm:ListCommandInvocations",
+            "ssm:ListCommands"
+          ],
+          Resource : "*"
+        },
+        {
+          Sid : "AllowCloudWatchLogs",
+          Effect : "Allow",
+          Action : [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogStreams"
+          ],
+          Resource : "*"
+        }
+      ]
+    })
+  }
+}
+```
+</details>
