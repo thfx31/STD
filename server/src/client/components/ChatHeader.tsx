@@ -11,10 +11,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	serverId,
 }) => (
 	<header className="bg-white shadow-sm px-6 py-4 sticky top-0 z-10">
-		<div className="max-w-6xl mx-auto flex justify-between items-center">
-			<h1 className="text-2xl font-bold text-gray-800">Chat</h1>
+		<div className="max-w-6xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 justify-center md:justify-between">
+			<h1 className="text-2xl font-bold text-gray-800 w-full md:w-auto text-center md:text-left">
+				Chat
+			</h1>
 			{serverId && (
-				<div className=" text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+				<div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg w-full md:w-auto text-center md:text-left">
 					ID du serveur: {serverId}
 				</div>
 			)}
