@@ -32,7 +32,7 @@ const App = () => {
 	};
 
 	return (
-		<div className="h-screen overflow-hidden bg-red-500 flex flex-col w-screen">
+		<div className="h-screen overflow-hidden bg-gray-50 flex flex-col w-screen">
 			{!isUsernameSet ? (
 				<UsernameForm
 					username={username}
