@@ -92,6 +92,13 @@ resource "aws_ecs_service" "std-ecs-service" {
     security_groups  = [aws_security_group.chat.id]
     assign_public_ip = true
   }
+
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+      desired_count
+    ]
+  }
 }
 
 resource "aws_iam_role" "ecs_execution_role_chat" {
@@ -205,3 +212,49 @@ resource "aws_security_group" "chat" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
+
+
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 10
+  min_capacity       = 2
+  resource_id        = "service/${aws_ecs_cluster.std-ecs-cluster.name}/${aws_ecs_service.std-ecs-service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_cpu_policy" {
+  name               = "ecs-cpu-scaling-policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = 50.0 # Se scale quand CPU > 50%
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 60
+  }
+}
+
+resource "aws_appautoscaling_policy" "ecs_memory_policy" {
+  name               = "ecs-memory-scaling-policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = 75.0
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 60
+  }
+}
+
