@@ -9,6 +9,13 @@ on:
 env:
   TERRAFORM_DIR: ./terraform # Variable pour le dossier Terraform
 
+  AWS_REGION: eu-west-1
+  ECS_SERVICE: std-ecs-service 
+  ECS_CLUSTER: std-ecs-cluster             
+  ECS_TASK_DEFINITION: std-ecs-task  # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: std-ecs-chat
+
+
 jobs:
   terraform:
     name: "Terraform"
@@ -96,6 +103,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Build Docker Image
         working-directory: ./server
         run: docker build . --pull -t chat-server:latest
@@ -107,9 +121,35 @@ jobs:
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           docker tag chat-server:latest ghcr.io/${REPO_NAME}/chat-server:latest
+          docker tag chat-server:latest ghcr.io/${REPO_NAME}/chat-server:${{ github.sha }}
 
       - name: Push Docker Image
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        id: build-image
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           docker push ghcr.io/${REPO_NAME}/chat-server:latest
+          docker push ghcr.io/${REPO_NAME}/chat-server:${{ github.sha }}
+          echo "image=ghcr.io/${REPO_NAME}/chat-server:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{env.ECS_TASK_DEFINITION}} --query taskDefinition > task-definition.json
+
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
