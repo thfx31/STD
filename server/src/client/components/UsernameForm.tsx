@@ -14,7 +14,7 @@ export const UsernameForm: React.FC<UsernameFormProps> = ({
 	onUsernameChange,
 	onSubmit,
 }) => (
-	<div className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+	<div className="h-full flex items-center justify-center p-4">
 		<div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-gray-100">
 			<div className="flex items-center space-x-3 mb-8">
 				<User className="w-8 h-8 text-blue-500" />
@@ -43,8 +43,6 @@ export const UsernameForm: React.FC<UsernameFormProps> = ({
 					<ChevronRight className="w-5 h-5" />
 				</button>
 			</form>
-
-			<p className="text-gray-500 mt-4 text-center">Crée par Sylvain</p>
 		</div>
 	</div>
 );

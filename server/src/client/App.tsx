@@ -1,17 +1,12 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
-import { ChatHeader } from "./components/ChatHeader";
-import { ChatMessage } from "./components/ChatMessage";
-import { MessageForm } from "./components/MessageForm";
+import { useEffect, useState } from "react";
+import { ChatPage } from "./components/ChatPage";
 import { UsernameForm } from "./components/UsernameForm";
-import { useSocket } from "./hooks/useSocket";
 
 const App = () => {
 	const [username, setUsername] = useState("");
 	const [isUsernameSet, setIsUsernameSet] = useState(false);
 	const [serverId, setServerId] = useState("");
-	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const { messages, sendMessage } = useSocket();
 
 	useEffect(() => {
 		fetch("/api/server-id")
@@ -20,11 +15,6 @@ const App = () => {
 			.catch((err) => console.error("Error fetching server ID:", err));
 	}, []);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: to scroll to the bottom of the chat when a new message is sent
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [messages]);
-
 	const handleUsernameSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (username.trim()) {
@@ -32,10 +22,15 @@ const App = () => {
 		}
 	};
 
-	//set height of the chat to dynamic height
+	// biome-ignore lint/correctness/noConstantCondition:  TESTING
+	const newColor = false
+		? "bg-gradient-to-br from-blue-500 to-emerald-500"
+		: "bg-gradient-to-br from-red-500 to-purple-500";
 
 	return (
-		<div className=" overflow-hidden bg-gray-50 flex flex-col w-screen h-[100dvh]">
+		<div
+			className={` overflow-hidden  flex flex-col w-screen h-[100dvh] ${newColor}`}
+		>
 			{!isUsernameSet ? (
 				<UsernameForm
 					username={username}
@@ -44,32 +39,7 @@ const App = () => {
 					onSubmit={handleUsernameSubmit}
 				/>
 			) : (
-				<>
-					<ChatHeader username={username} serverId={serverId} />
-					<main className="flex-1 max-w-6xl w-full mx-auto p-6">
-						<div className="bg-white rounded-2xl shadow-lg h-full flex flex-col">
-							{/* Zone de messages scrollable */}
-							<div className="flex-1 relative">
-								<div className="absolute inset-0 overflow-y-auto p-6">
-									<div className="space-y-6">
-										{messages.map((msg, index) => (
-											<ChatMessage
-												key={`${msg}-${
-													// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-													index
-												}`}
-												message={msg}
-												currentUsername={username}
-											/>
-										))}
-										<div ref={messagesEndRef} />
-									</div>
-								</div>
-							</div>
-							<MessageForm username={username} onSendMessage={sendMessage} />
-						</div>
-					</main>
-				</>
+				<ChatPage username={username} serverId={serverId} />
 			)}
 		</div>
 	);

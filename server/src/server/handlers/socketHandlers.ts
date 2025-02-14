@@ -1,6 +1,7 @@
 import type { RedisClientType } from "redis";
 import type { Server, Socket } from "socket.io";
 import { MESSAGE_EXPIRATION, REDIS_KEY } from "../config/redis.js";
+import { serverId } from "../routes/api.js";
 
 export const handleSocketConnection = (
 	socket: Socket,
@@ -23,7 +24,7 @@ export const handleSocketConnection = (
 		username,
 		message,
 	}: { username: string; message: string }) => {
-		const chatMessage = { username, message, timestamp: Date.now() };
+		const chatMessage = { username, message, timestamp: Date.now(), serverId };
 		console.log("📩 Received message:", chatMessage);
 
 		await redisClient.rPush(REDIS_KEY, JSON.stringify(chatMessage));

@@ -2,13 +2,11 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 
 export const apiRoutes = express.Router();
-const serverId = randomUUID();
+export const serverId = randomUUID();
 
 apiRoutes.get("/server-id", (req, res) => {
 	res.json({ id: serverId });
 });
-
-//fait moi une route a haute charge comme avec du fibonacci ou du factorielle
 
 apiRoutes.get("/fibonacci/:number", (req, res) => {
 	const number = Number.parseInt(req.params.number);
@@ -24,7 +22,6 @@ function fibonacci(n: number): number {
 	return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-//fait moi une route de test de charge qui consomme beaucoup de ram et de cpu
 apiRoutes.get("/cpu", (req, res) => {
 	const startTimestamp = Date.now();
 	const result = cpu();
@@ -41,7 +38,6 @@ function cpu(): number {
 	return result;
 }
 
-//fait moi une route de test de charge qui consomme beaucoup de ram et de cpu
 apiRoutes.get("/ram", (req, res) => {
 	const startTimestamp = Date.now();
 	const result = ram();
