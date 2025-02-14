@@ -4,7 +4,7 @@ import { type Socket, io } from "socket.io-client";
 export interface Message {
 	username: string;
 	message: string;
-	serverId: string;
+	serverId?: string;
 }
 
 export const useSocket = () => {

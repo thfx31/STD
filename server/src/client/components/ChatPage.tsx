@@ -22,7 +22,7 @@ export const ChatPage = ({
 	return (
 		<>
 			<ChatHeader username={username} serverId={serverId} />
-			<main className="flex-1  w-full mx-auto p-6 lg:grid lg:grid-cols-3 gap-x-3">
+			<main className="flex-1 max-w-7xl w-full mx-auto p-6 lg:grid lg:grid-cols-3 gap-x-3">
 				<div className="bg-white rounded-2xl shadow-lg h-full flex flex-col col-span-2">
 					{/* Zone de messages scrollable */}
 					<div className="flex-1 relative">
