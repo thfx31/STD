@@ -23,7 +23,7 @@ const App = () => {
 	};
 
 	// biome-ignore lint/correctness/noConstantCondition:  TESTING
-	const newColor = false
+	const newColor = true
 		? "bg-gradient-to-br from-blue-500 to-emerald-500"
 		: "bg-gradient-to-br from-red-500 to-purple-500";
 

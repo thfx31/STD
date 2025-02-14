@@ -72,7 +72,7 @@ resource "aws_ecs_service" "std-ecs-service" {
   name            = "std-ecs-service"
   cluster         = aws_ecs_cluster.std-ecs-cluster.id
   task_definition = aws_ecs_task_definition.std-ecs-task.arn
-  desired_count   = 2
+  desired_count   = 3
 
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
@@ -216,7 +216,7 @@ resource "aws_security_group" "chat" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 10
-  min_capacity       = 2
+  min_capacity       = 3
   resource_id        = "service/${aws_ecs_cluster.std-ecs-cluster.name}/${aws_ecs_service.std-ecs-service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
